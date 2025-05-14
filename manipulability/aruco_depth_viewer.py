@@ -76,7 +76,6 @@ def main(args=None):
     rclpy.init(args=args)
     node = ArucoDepthViewer()
     rclpy.spin(node)
-    rclpy.spin_once(node)
     node.destroy_node()
     cv2.destroyAllWindows()
 

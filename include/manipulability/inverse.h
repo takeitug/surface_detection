@@ -1,7 +1,7 @@
 #ifndef MANIPULABILITY_INVERSE_H
 #define MANIPULABILITY_INVERSE_H
 
-#include <Eigen/Dense>
+#include "eigen3/Eigen/Dense"
 
 namespace manipulability {
 

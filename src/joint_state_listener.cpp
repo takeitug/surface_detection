@@ -4,7 +4,7 @@
 #include <iostream>
 #include <rclcpp/rclcpp.hpp>
 #include <sensor_msgs/msg/joint_state.hpp>
-#include <Eigen/Dense>
+#include "eigen3/Eigen/Dense"
 #include "manipulability/inverse.h"
 
 using namespace std::chrono_literals;

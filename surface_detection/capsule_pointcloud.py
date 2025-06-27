@@ -92,6 +92,8 @@ class MarkerCloudFilter(Node):
         self.broadcast_static_transform()
 
         self.create_subscription(Bool, '/pointcloud_acquired', self.stop_callback, 10)
+        self.create_subscription(Bool, '/setinitialposition', self.start_callback, 10)
+        self.setinitialposition=False
 
     def broadcast_static_transform(self):
         static_tf = TransformStamped()
@@ -116,6 +118,9 @@ class MarkerCloudFilter(Node):
         self.marker2_pose_cam = msg.pose
 
     def cloud_callback(self, msg: PointCloud2):
+        if not self.setinitialposition:
+            return
+        
         if self.marker1_pose_cam is None or self.marker2_pose_cam is None:
             return
         try:
@@ -176,6 +181,9 @@ class MarkerCloudFilter(Node):
     def stop_callback(msg):
         if msg.data:
             rclpy.shutdown()
+    
+    def start_callback(self,msg):
+        self.setinitialposition=msg.data
 
 def main(args=None):
     rclpy.init(args=args)

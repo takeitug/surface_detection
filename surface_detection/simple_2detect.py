@@ -8,6 +8,7 @@ import cv2
 import numpy as np
 import math
 from cv2 import aruco
+from std_msgs.msg import Bool
 
 class Simple2detect(Node):
     def __init__(self):
@@ -32,6 +33,8 @@ class Simple2detect(Node):
 
         # カメラ内部パラメータ
         self.fx = self.fy = self.cx = self.cy = 0
+        
+        self.create_subscription(Bool, '/pointcloud_acquired', self.stop_callback, 10)
 
     def camera_info_callback(self, msg):
         if not self.camera_info_received:
@@ -126,6 +129,10 @@ class Simple2detect(Node):
         # ウィンドウ表示
         cv2.imshow("AR Marker Detection", rgb_image)
         cv2.waitKey(1)
+    
+    def stop_callback(msg):
+        if msg.data:
+            rclpy.shutdown()
 
 def main(args=None):
     rclpy.init(args=args)

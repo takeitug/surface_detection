@@ -28,6 +28,7 @@ setup(
             'aruco_detect=surface_detection.aruco_detect:main',
             'simple_2detect=surface_detection.simple_2detect:main',
             'extract_pointcloud=surface_detection.extract_pointcloud:main',
+            'capsule_pointcloud=surface_detection.capsule_pointcloud:main',
         ],
     },
 )

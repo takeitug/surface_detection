@@ -28,6 +28,7 @@ class Simple2detect(Node):
         # ArUco設定
         self.aruco_dict = cv2.aruco.getPredefinedDictionary(cv2.aruco.DICT_4X4_50)
         self.parameters = cv2.aruco.DetectorParameters()
+        self.aruco_detector = cv2.aruco.ArucoDetector(self.aruco_dict, self.parameters)
 
         # カメラ内部パラメータ
         self.fx = self.fy = self.cx = self.cy = 0
@@ -49,7 +50,7 @@ class Simple2detect(Node):
             return
 
         rgb_image = self.bridge.imgmsg_to_cv2(msg, desired_encoding='bgr8')
-        corners, ids, _ = cv2.aruco.detectMarkers(rgb_image, self.aruco_dict, parameters=self.parameters)
+        corners, ids, _ = self.aruco_detector.detectMarkers(rgb_image)
 
         if ids is not None:
             

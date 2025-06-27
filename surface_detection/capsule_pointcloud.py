@@ -128,6 +128,9 @@ class MarkerCloudFilter(Node):
         #---【1】カメラ座標系でのカプセル抽出 ---
         cloud_points = list(point_cloud2.read_points(msg, skip_nans=True, field_names=("x", "y", "z")))
         cloud_np = np.array(cloud_points)
+        if cloud_np.dtype.names:  # 構造化配列の場合は通常配列に変換
+            cloud_np = np.stack([cloud_np['x'], cloud_np['y'], cloud_np['z']], axis=-1)
+        cloud_np = cloud_np.astype(np.float64)
         marker1_np = np.array([self.marker1_pose_cam.position.x, self.marker1_pose_cam.position.y, self.marker1_pose_cam.position.z])
         marker2_np = np.array([self.marker2_pose_cam.position.x, self.marker2_pose_cam.position.y, self.marker2_pose_cam.position.z])
         mask = is_in_capsule(cloud_np, marker1_np, marker2_np, self.radius)
@@ -180,6 +183,3 @@ def main(args=None):
     rclpy.spin(node)
     node.destroy_node()
     rclpy.shutdown()
-
-# [capsule_pointcloud-2]     w = points_np - p1
-# [capsule_pointcloud-2] numpy.core._exceptions._UFuncNoLoopError: ufunc 'subtract' did not contain a loop with signature matching types (dtype([('x', '<f4'), ('y', '<f4'), ('z', '<f4')]), dtype('float64')) -> None

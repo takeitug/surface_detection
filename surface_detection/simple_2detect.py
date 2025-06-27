@@ -7,6 +7,7 @@ from cv_bridge import CvBridge
 import cv2
 import numpy as np
 import math
+from cv2 import aruco
 
 class Simple2detect(Node):
     def __init__(self):

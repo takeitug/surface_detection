@@ -11,7 +11,7 @@ setup(
             ['resource/' + package_name]),
         ('share/' + package_name, ['package.xml']),
         ('share/' + package_name + '/launch', [
-            'launch/simple_capsule.launch.py'
+            'launch/detection.launch.py'
         ]),
     ],
     install_requires=['setuptools'],

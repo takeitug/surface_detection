@@ -180,3 +180,6 @@ def main(args=None):
     rclpy.spin(node)
     node.destroy_node()
     rclpy.shutdown()
+
+# [capsule_pointcloud-2]     w = points_np - p1
+# [capsule_pointcloud-2] numpy.core._exceptions._UFuncNoLoopError: ufunc 'subtract' did not contain a loop with signature matching types (dtype([('x', '<f4'), ('y', '<f4'), ('z', '<f4')]), dtype('float64')) -> None

@@ -100,13 +100,13 @@ class Simple2detect(Node):
             if id_count==2:
                 marker1_pose_pub=marker1_pose
                 marker2_pose_pub=marker2_pose
-                dist_x=marker1_pose.pose.posision.x
-                dist_y=marker1_pose.pose.posision.y
-                dist_z=marker1_pose.pose.posision.z
+                dist_x=marker1_pose.pose.position.x
+                dist_y=marker1_pose.pose.position.y
+                dist_z=marker1_pose.pose.position.z
                 dist=math.sqrt(dist_x*dist_x+dist_y*dist_y+dist_z*dist_z)
-                dist_x=marker2_pose.pose.posision.x
-                dist_y=marker2_pose.pose.posision.y
-                dist_z=marker2_pose.pose.posision.z
+                dist_x=marker2_pose.pose.position.x
+                dist_y=marker2_pose.pose.position.y
+                dist_z=marker2_pose.pose.position.z
                 if dist<math.sqrt(dist_x*dist_x+dist_y*dist_y+dist_z*dist_z):
                     marker1_pose_pub=marker2_pose
                     marker2_pose_pub=marker1_pose
@@ -114,14 +114,14 @@ class Simple2detect(Node):
                 self.marker1_pub.publish(marker1_pose_pub)
                 self.marker2_pub.publish(marker2_pose_pub)
                 
-                self.get_logger().info(
-                    f"Marker ID 1: ({marker1_pose_pub.pose.position.x:.2f}, "
-                    f"{marker1_pose_pub.pose.position.y:.2f}, {marker1_pose_pub.pose.position.z:.2f}) [m]"
-                )
-                self.get_logger().info(
-                    f"Marker ID 2: ({marker2_pose_pub.pose.position.x:.2f}, "
-                    f"{marker2_pose_pub.pose.position.y:.2f}, {marker2_pose_pub.pose.position.z:.2f}) [m]"
-                )
+                # self.get_logger().info(
+                #     f"Marker ID 1: ({marker1_pose_pub.pose.position.x:.2f}, "
+                #     f"{marker1_pose_pub.pose.position.y:.2f}, {marker1_pose_pub.pose.position.z:.2f}) [m]"
+                # )
+                # self.get_logger().info(
+                #     f"Marker ID 2: ({marker2_pose_pub.pose.position.x:.2f}, "
+                #     f"{marker2_pose_pub.pose.position.y:.2f}, {marker2_pose_pub.pose.position.z:.2f}) [m]"
+                # )
                 
         # ウィンドウ表示
         cv2.imshow("AR Marker Detection", rgb_image)

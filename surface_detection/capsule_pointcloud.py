@@ -140,6 +140,18 @@ class MarkerCloudFilter(Node):
         marker2_np = np.array([self.marker2_pose_cam.position.x, self.marker2_pose_cam.position.y, self.marker2_pose_cam.position.z])
         mask = is_in_capsule(cloud_np, marker1_np, marker2_np, self.radius)
         capsule_points_camera = cloud_np[mask]
+        orig_size = len(capsule_points_camera)
+        self.get_logger().info(f"ダウンサンプリング前点数: {orig_size}")
+
+        # 半分だけランダムに抜き出す
+        downsample_num = orig_size // 2
+        if orig_size > 1:  # 1点以下のときはダウンサンプリング不要
+            idx = np.random.choice(orig_size, downsample_num, replace=False)
+            capsule_points_camera = capsule_points_camera[idx]
+            self.get_logger().info(f"ダウンサンプリング後点数: {len(capsule_points_camera)}")
+        else:
+            self.get_logger().info("ダウンサンプリング不要（点数1以下）")
+
 
         #---【2】抽出点のみワールド座標変換 ---
         capsule_points_world = []

@@ -144,7 +144,8 @@ class MarkerCloudFilter(Node):
         self.get_logger().info(f"ダウンサンプリング前点数: {orig_size}")
 
         # 半分だけランダムに抜き出す
-        downsample_num = orig_size // 2
+        #downsample_num = orig_size // 4
+        downsample_num=30000
         if orig_size > 1:  # 1点以下のときはダウンサンプリング不要
             idx = np.random.choice(orig_size, downsample_num, replace=False)
             capsule_points_camera = capsule_points_camera[idx]

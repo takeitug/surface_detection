@@ -74,9 +74,9 @@ class MarkerCloudFilter(Node):
         self.marker2_pub = self.create_publisher(PoseStamped, '/marker2_transformed', 10)
 
         self.declare_parameter("camera_frame", "camera_link")
-        self.declare_parameter("camera_mount_frame", "lbr_link_7")
+        self.declare_parameter("camera_mount_frame", "lbr_link_ee")
         self.declare_parameter("world_frame", "world")
-        self.declare_parameter("camera_to_mount_translation", [0.075, 0.0, 0.025])
+        self.declare_parameter("camera_to_mount_translation", [0.075, -0.03, 0.053])
         self.declare_parameter("camera_to_mount_rotation_rpy", [0.0, 0.0, np.pi/2])
 
         self.camera_frame = self.get_parameter("camera_frame").get_parameter_value().string_value
@@ -144,6 +144,7 @@ class MarkerCloudFilter(Node):
         self.get_logger().info(f"ダウンサンプリング前点数: {orig_size}")
 
         # 半分だけランダムに抜き出す
+        # downsample_num = orig_size
         downsample_num = orig_size // 2
         # downsample_num=30000
         if orig_size > 1:  # 1点以下のときはダウンサンプリング不要

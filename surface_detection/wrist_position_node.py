@@ -43,8 +43,8 @@ class LeftWristPoseNode(Node):
 
         self.declare_parameter("camera_mount_frame", "camera_mount_frame")
         self.declare_parameter("world_frame", "world")
-        self.declare_parameter("translation", [0.0, 0.0, 0.0])  # 原点
-        self.declare_parameter("rotation_rpy", [0.0, 0.0, 0.0]) # 回転なし
+        self.declare_parameter("translation", [-0.9, 0.2, 0.75])  # 原点
+        self.declare_parameter("rotation_rpy", [-np.pi/2, np.pi, -np.pi/2.8]) # 回転なし
 
         self.camera_mount_frame = self.get_parameter("camera_mount_frame").get_parameter_value().string_value
         self.world_frame = self.get_parameter("world_frame").get_parameter_value().string_value

@@ -104,6 +104,9 @@ class LeftWristPoseNode(Node):
         results = self.model.predict(rgb_image)
         persons = results[0]
 
+        min_dist = float('inf')
+        min_wrist_world = None
+
         for person in persons:
             index = 9  # "wrist(L)"
             keypoints = person.keypoints
@@ -136,21 +139,36 @@ class LeftWristPoseNode(Node):
                 pose_cam.pose.orientation.w = 1.0
                 pose_world = do_transform_pose(pose_cam, tf)
                 pose_world.header.frame_id = self.world_frame
-                array = Float64MultiArray()
-                array.data = [
+
+                # 原点（0,0,0）との距離
+                dist = np.linalg.norm([
                     pose_world.pose.position.x,
                     pose_world.pose.position.y,
                     pose_world.pose.position.z
-                ]
-                self.wrist_pub.publish(array)
-                # オプション：表示
-                cv2.circle(rgb_image, (x, y), 10, (255, 0, 0), -1)
-                pos_txt = f"({array.data[0]:.2f}, {array.data[1]:.2f}, {array.data[2]:.2f})"
-                cv2.putText(rgb_image, pos_txt, (x+10, y), cv2.FONT_HERSHEY_SIMPLEX, 0.5, (255,255,255), 1)
+                ])
+                # 最小距離のものを記録
+                if dist < min_dist:
+                    min_dist = dist
+                    min_wrist_world = [
+                        pose_world.pose.position.x,
+                        pose_world.pose.position.y,
+                        pose_world.pose.position.z
+                    ]
             except Exception as e:
                 self.get_logger().warn(f"TF transform failed: {e}")
+
+        if min_wrist_world is not None:
+            array = Float64MultiArray()
+            array.data = min_wrist_world
+            self.wrist_pub.publish(array)
+            # オプション: 表示
+            x, y, z = min_wrist_world
+            cv2.putText(rgb_image, f"pub: ({x:.2f}, {y:.2f}, {z:.2f})", (20, 30),
+                        cv2.FONT_HERSHEY_SIMPLEX, 0.7, (0,255,0), 2)
+
         cv2.imshow("Left Wrist Detection", rgb_image)
         cv2.waitKey(1)
+
 
 def main(args=None):
     rclpy.init(args=args)

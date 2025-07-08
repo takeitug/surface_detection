@@ -74,9 +74,9 @@ class MarkerCloudFilter(Node):
         self.marker2_pub = self.create_publisher(PoseStamped, '/marker2_transformed', 10)
 
         self.declare_parameter("camera_frame", "camera_link")
-        self.declare_parameter("camera_mount_frame", "lbr_link_7")
+        self.declare_parameter("camera_mount_frame", "lbr_link_ee")
         self.declare_parameter("world_frame", "world")
-        self.declare_parameter("camera_to_mount_translation", [0.075, 0.0, 0.025])
+        self.declare_parameter("camera_to_mount_translation", [0.075, -0.03, 0.053])
         self.declare_parameter("camera_to_mount_rotation_rpy", [0.0, 0.0, np.pi/2])
 
         self.camera_frame = self.get_parameter("camera_frame").get_parameter_value().string_value
@@ -92,6 +92,8 @@ class MarkerCloudFilter(Node):
         self.broadcast_static_transform()
 
         self.create_subscription(Bool, '/pointcloud_acquired', self.stop_callback, 10)
+        self.create_subscription(Bool, '/setinitialposition', self.start_callback, 10)
+        self.setinitialposition=False
 
     def broadcast_static_transform(self):
         static_tf = TransformStamped()
@@ -116,6 +118,9 @@ class MarkerCloudFilter(Node):
         self.marker2_pose_cam = msg.pose
 
     def cloud_callback(self, msg: PointCloud2):
+        if not self.setinitialposition:
+            return
+        
         if self.marker1_pose_cam is None or self.marker2_pose_cam is None:
             return
         try:
@@ -128,10 +133,27 @@ class MarkerCloudFilter(Node):
         #---【1】カメラ座標系でのカプセル抽出 ---
         cloud_points = list(point_cloud2.read_points(msg, skip_nans=True, field_names=("x", "y", "z")))
         cloud_np = np.array(cloud_points)
+        if cloud_np.dtype.names:  # 構造化配列の場合は通常配列に変換
+            cloud_np = np.stack([cloud_np['x'], cloud_np['y'], cloud_np['z']], axis=-1)
+        cloud_np = cloud_np.astype(np.float64)
         marker1_np = np.array([self.marker1_pose_cam.position.x, self.marker1_pose_cam.position.y, self.marker1_pose_cam.position.z])
         marker2_np = np.array([self.marker2_pose_cam.position.x, self.marker2_pose_cam.position.y, self.marker2_pose_cam.position.z])
         mask = is_in_capsule(cloud_np, marker1_np, marker2_np, self.radius)
         capsule_points_camera = cloud_np[mask]
+        orig_size = len(capsule_points_camera)
+        self.get_logger().info(f"ダウンサンプリング前点数: {orig_size}")
+
+        # 半分だけランダムに抜き出す
+        # downsample_num = orig_size
+        downsample_num = orig_size // 2
+        # downsample_num=30000
+        if orig_size > 1:  # 1点以下のときはダウンサンプリング不要
+            idx = np.random.choice(orig_size, downsample_num, replace=False)
+            capsule_points_camera = capsule_points_camera[idx]
+            self.get_logger().info(f"ダウンサンプリング後点数: {len(capsule_points_camera)}")
+        else:
+            self.get_logger().info("ダウンサンプリング不要（点数1以下）")
+
 
         #---【2】抽出点のみワールド座標変換 ---
         capsule_points_world = []
@@ -173,6 +195,9 @@ class MarkerCloudFilter(Node):
     def stop_callback(msg):
         if msg.data:
             rclpy.shutdown()
+    
+    def start_callback(self,msg):
+        self.setinitialposition=msg.data
 
 def main(args=None):
     rclpy.init(args=args)

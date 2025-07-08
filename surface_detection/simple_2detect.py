@@ -6,6 +6,9 @@ from geometry_msgs.msg import PoseStamped, Point, Quaternion, TransformStamped
 from cv_bridge import CvBridge
 import cv2
 import numpy as np
+import math
+from cv2 import aruco
+from std_msgs.msg import Bool
 
 class Simple2detect(Node):
     def __init__(self):
@@ -26,9 +29,12 @@ class Simple2detect(Node):
         # ArUco設定
         self.aruco_dict = cv2.aruco.getPredefinedDictionary(cv2.aruco.DICT_4X4_50)
         self.parameters = cv2.aruco.DetectorParameters()
+        self.aruco_detector = cv2.aruco.ArucoDetector(self.aruco_dict, self.parameters)
 
         # カメラ内部パラメータ
         self.fx = self.fy = self.cx = self.cy = 0
+        
+        self.create_subscription(Bool, '/pointcloud_acquired', self.stop_callback, 10)
 
     def camera_info_callback(self, msg):
         if not self.camera_info_received:
@@ -47,7 +53,7 @@ class Simple2detect(Node):
             return
 
         rgb_image = self.bridge.imgmsg_to_cv2(msg, desired_encoding='bgr8')
-        corners, ids, _ = cv2.aruco.detectMarkers(rgb_image, self.aruco_dict, parameters=self.parameters)
+        corners, ids, _ = self.aruco_detector.detectMarkers(rgb_image)
 
         if ids is not None:
             
@@ -95,21 +101,38 @@ class Simple2detect(Node):
                     cv2.putText(rgb_image, pos_txt, (center_x+10, center_y), cv2.FONT_HERSHEY_SIMPLEX, 0.5, (0,0,255), 1)
 
             if id_count==2:
-                self.marker1_pub.publish(marker1_pose)
-                self.marker2_pub.publish(marker2_pose)
+                marker1_pose_pub=marker1_pose
+                marker2_pose_pub=marker2_pose
+                dist_x=marker1_pose.pose.position.x
+                dist_y=marker1_pose.pose.position.y
+                dist_z=marker1_pose.pose.position.z
+                dist=math.sqrt(dist_x*dist_x+dist_y*dist_y+dist_z*dist_z)
+                dist_x=marker2_pose.pose.position.x
+                dist_y=marker2_pose.pose.position.y
+                dist_z=marker2_pose.pose.position.z
+                if dist<math.sqrt(dist_x*dist_x+dist_y*dist_y+dist_z*dist_z):
+                    marker1_pose_pub=marker2_pose
+                    marker2_pose_pub=marker1_pose
+
+                self.marker1_pub.publish(marker1_pose_pub)
+                self.marker2_pub.publish(marker2_pose_pub)
                 
-                self.get_logger().info(
-                    f"Marker ID 1: ({marker1_pose.pose.position.x:.2f}, "
-                    f"{marker1_pose.pose.position.y:.2f}, {marker1_pose.pose.position.z:.2f}) [m]"
-                )
-                self.get_logger().info(
-                    f"Marker ID 2: ({marker2_pose.pose.position.x:.2f}, "
-                    f"{marker2_pose.pose.position.y:.2f}, {marker2_pose.pose.position.z:.2f}) [m]"
-                )
+                # self.get_logger().info(
+                #     f"Marker ID 1: ({marker1_pose_pub.pose.position.x:.2f}, "
+                #     f"{marker1_pose_pub.pose.position.y:.2f}, {marker1_pose_pub.pose.position.z:.2f}) [m]"
+                # )
+                # self.get_logger().info(
+                #     f"Marker ID 2: ({marker2_pose_pub.pose.position.x:.2f}, "
+                #     f"{marker2_pose_pub.pose.position.y:.2f}, {marker2_pose_pub.pose.position.z:.2f}) [m]"
+                # )
                 
         # ウィンドウ表示
         cv2.imshow("AR Marker Detection", rgb_image)
         cv2.waitKey(1)
+    
+    def stop_callback(msg):
+        if msg.data:
+            rclpy.shutdown()
 
 def main(args=None):
     rclpy.init(args=args)

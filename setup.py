@@ -10,6 +10,9 @@ setup(
         ('share/ament_index/resource_index/packages',
             ['resource/' + package_name]),
         ('share/' + package_name, ['package.xml']),
+        ('share/' + package_name + '/launch', [
+            'launch/detection.launch.py'
+        ]),
     ],
     install_requires=['setuptools'],
     zip_safe=True,
@@ -29,6 +32,7 @@ setup(
             'simple_2detect=surface_detection.simple_2detect:main',
             'extract_pointcloud=surface_detection.extract_pointcloud:main',
             'capsule_pointcloud=surface_detection.capsule_pointcloud:main',
+            'wrist_position_node=surface_detection.wrist_position_node:main',
         ],
     },
 )

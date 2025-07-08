@@ -106,6 +106,7 @@ class LeftWristPoseNode(Node):
 
         min_dist = float('inf')
         min_wrist_world = None
+        put_text_pos=None
 
         for person in persons:
             index = 9  # "wrist(L)"
@@ -154,6 +155,7 @@ class LeftWristPoseNode(Node):
                         pose_world.pose.position.y,
                         pose_world.pose.position.z
                     ]
+                    put_text_pos=[x,y]
             except Exception as e:
                 self.get_logger().warn(f"TF transform failed: {e}")
 
@@ -163,8 +165,10 @@ class LeftWristPoseNode(Node):
             self.wrist_pub.publish(array)
             # オプション: 表示
             x, y, z = min_wrist_world
-            cv2.putText(rgb_image, f"pub: ({x:.2f}, {y:.2f}, {z:.2f})", (20, 30),
-                        cv2.FONT_HERSHEY_SIMPLEX, 0.7, (0,255,0), 2)
+            put_x, put_y=put_text_pos
+            cv2.circle(rgb_image, (put_x, put_y), 10, (255, 0, 0), -1)
+            cv2.putText(rgb_image, f"({x:.2f}, {y:.2f}, {z:.2f})", (put_x+10, put_y),
+                        cv2.FONT_HERSHEY_SIMPLEX, 0.5, (255,255,255), 1)
 
         cv2.imshow("Left Wrist Detection", rgb_image)
         cv2.waitKey(1)
